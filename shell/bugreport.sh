@@ -112,10 +112,20 @@ function print_available_mem()
 	fi
 
 	has_command "hwprefs"
-
 	if [[ $? -eq 1 ]]; then
 		MEM=`hwprefs memory_size 2>/dev/null`;
 		if [[ $? -eq 0 ]]; then
+			echo "Available Mem  : $MEM";
+		else
+			echo "$ERR_MSG";
+		fi
+    return;
+  fi
+
+  has_command "system_profiler"
+  if [[ $? -eq 1 ]]; then
+    MEM=`system_profiler | grep "  Memory:" 2>/dev/null | tr -d ' ' | awk -F: '{print $2}'`;
+    if [[ $? -eq 0 ]]; then
 			echo "Available Mem  : $MEM";
 		else
 			echo "$ERR_MSG";
@@ -132,12 +142,18 @@ function _get_cpu_count()
 {
 	if [[ -f "/proc/cpuinfo" ]]; then
 		CPU_COUNT=`grep processor /proc/cpuinfo | wc -l`
+    return;
 	fi
 
 	has_command "hwprefs"
-
 	if [[ $? -eq 1 ]]; then
 		CPU_COUNT=`hwprefs cpu_count`;
+    return;
+	fi
+
+  has_command "system_profiler"
+  if [[ $? -eq 1 ]]; then
+    CPU_COUNT=`system_profiler|grep -i cores|awk -F: '{print $2}' | tr -d ' '`
 	fi
 }
 
@@ -145,15 +161,23 @@ function _get_cpu_type()
 {
 	if [[ -f "/proc/cpuinfo" ]]; then
 		CPU_TYPE=`grep "model name" /proc/cpuinfo |head -1|sed 's/.*: //g'`
+    return;
 	fi
 
 	has_command "hwprefs"
-
 	if [[ $? -eq 1 ]]; then
 		CT=`hwprefs cpu_type`;
 		CF=`hwprefs cpu_freq`;
 		CPU_TYPE="${CT}\t@ ${CF}";
+    return;
 	fi
+
+  has_command "system_profiler"
+  if [[ $? -eq 1 ]]; then
+    CT=`system_profiler|grep -i 'Processor Name'|awk -F: '{print $2}'`
+    CF=`system_profiler|grep -i 'Processor Speed'|awk -F: '{print $2}'`
+    CPU_TYPE="${CT}\t@ ${CF}"
+  fi
 }
 
 function print_cpu_info()
