@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Setup global variables
 PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin;
